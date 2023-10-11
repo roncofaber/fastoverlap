@@ -1,6 +1,7 @@
 # Compiled python modules.
 *.pyc
 *.so
+*.mod
 
 # Setuptools distribution folder.
 /dist/
