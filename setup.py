@@ -24,7 +24,7 @@ def merge_libs(*libs):
 
 
 extra_compile_args=[
-    '-Wall', '-Wextra', '-pedantic', '-funroll-loops', '-O2']
+    '-Wall', '-Wextra', '-pedantic', '-funroll-loops', '-O3']
 fastbulk_ext = Extension(name='fastoverlap.f90.fastbulk',
                          sources=['fastoverlap/f90/fastbulk.f90'],
                          extra_compile_args=extra_compile_args,
