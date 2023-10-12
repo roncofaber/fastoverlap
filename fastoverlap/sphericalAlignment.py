@@ -518,6 +518,8 @@ class SphericalAlignFortran(BaseSphericalAlignment):
             Aligned coordinates of pos2
         rmatbest : (3,3) array
             the rotation matrix that maps centred pos2 onto X2
+        permbest : (Natoms, 1) array
+            the permutation vector applied
         """
         if perm is not None:
             self.setPerm(perm)
@@ -530,7 +532,8 @@ class SphericalAlignFortran(BaseSphericalAlignment):
         self.fast.commons.perminvopt = invert
         args = (coordsb,coordsa,debug,self.Jmax,self.scale,nrot)
         dist, _, rmatbest, permbest = self.fast.clusterfastoverlap.align(*args)
-        return dist, coordsb.reshape(self.Natoms,3), coordsa.reshape(self.Natoms,3), rmatbest, permbest
+        return dist, coordsb.reshape(self.Natoms,3),\
+            coordsa.reshape(self.Natoms,3), rmatbest, permbest-1
 
 class SphericalHarmonicAlignFortran(BaseSphericalAlignment):
     """ Class for aligning two isolated structures, wrapper for FORTRAN
@@ -616,8 +619,9 @@ class SphericalHarmonicAlignFortran(BaseSphericalAlignment):
         coordsa = np.asanyarray(pos2).flatten()
         self.fast.commons.perminvopt = invert
         args = (coordsb,coordsa,debug,self.nmax,self.Jmax,self.harmscale,self.scale,nrot)
-        dist, _, rmatbest = self.clus.alignharm(*args)
-        return dist, coordsb.reshape(self.Natoms,3), coordsa.reshape(self.Natoms,3), rmatbest
+        dist, _, rmatbest, permbest = self.clus.alignharm(*args)
+        return dist, coordsb.reshape(self.Natoms,3),\
+            coordsa.reshape(self.Natoms,3), rmatbest, permbest-1
     ##
     def compareList(self, poslist, perm=None):
         """ Calculates the maximum and average overlap of a list of coordinates
@@ -661,7 +665,7 @@ class SphericalHarmonicAlignFortran(BaseSphericalAlignment):
         navgoverlap = avgoverlap / sqrt(diagavg[:,None]*diagavg[None,:])
         nmaxoverlap = maxoverlap / sqrt(diagmax[:,None]*diagmax[None,:])
         return avgoverlap, maxoverlap, navgoverlap, nmaxoverlap
-
+False
 
 
 if __name__ == "__main__":
