@@ -531,9 +531,9 @@ class SphericalAlignFortran(BaseSphericalAlignment):
         coordsa = np.asanyarray(pos2).flatten()
         self.fast.commons.perminvopt = invert
         args = (coordsb,coordsa,debug,self.Jmax,self.scale,nrot)
-        dist, _, rmatbest, permbest = self.fast.clusterfastoverlap.align(*args)
+        dist, _, rmatbest, permbest, inverted = self.fast.clusterfastoverlap.align(*args)
         return dist, coordsb.reshape(self.Natoms,3),\
-            coordsa.reshape(self.Natoms,3), rmatbest, permbest-1
+            coordsa.reshape(self.Natoms,3), rmatbest, permbest-1, inverted
 
 class SphericalHarmonicAlignFortran(BaseSphericalAlignment):
     """ Class for aligning two isolated structures, wrapper for FORTRAN

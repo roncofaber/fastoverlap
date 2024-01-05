@@ -24,15 +24,18 @@ def merge_libs(*libs):
 
 
 extra_compile_args=[
-    '-Wall', '-Wextra', '-pedantic', '-funroll-loops', '-O3']
+    '-Wall', '-funroll-loops', '-O3', '-march=native', '-Wrestrict']
+
 fastbulk_ext = Extension(name='fastoverlap.f90.fastbulk',
                          sources=['fastoverlap/f90/fastbulk.f90'],
                          extra_compile_args=extra_compile_args,
                          **merge_libs(fftw, lapack))
+
 fastcluster_ext = Extension(name='fastoverlap.f90.fastclusters',
                             sources=['fastoverlap/f90/fastclusters.f90'],
                             extra_compile_args=extra_compile_args,
                             **merge_libs(fftw, lapack))
+
 bnb_ext = Extension(name='fastoverlap.f90.libbnb',
                     sources=['fastoverlap/f90/bnbalign.f90'],
                     extra_compile_args=extra_compile_args,
