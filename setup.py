@@ -67,4 +67,6 @@ if __name__ == "__main__":
           packages             = setuptools.find_packages(),
           package_data         = {'': ['*.f90']},
           include_package_data = True,
-          ext_modules=[fastbulk_ext, fastcluster_ext, bnb_ext])
+          ext_modules=[fastbulk_ext, fastcluster_ext, bnb_ext],
+          # f90_compiler_flags=['-f90']
+          )
