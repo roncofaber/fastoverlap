@@ -8,7 +8,7 @@ from itertools import product, combinations_with_replacement, chain
 
 import numpy as np
 from numpy.linalg import norm
-from scipy import median
+# from scipy import median
 
 from .utils import find_best_permutation, findMax, _next_fast_len, findPeaks
 
