@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import setuptools
 from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
@@ -6,6 +7,10 @@ from numpy.distutils.system_info import get_info
 from numpy.distutils.ccompiler import new_compiler
 from numpy.distutils.fcompiler import new_fcompiler
 
+# Set environment variables to use gfortran-9
+os.environ['F77'] = 'gfortran-9'
+os.environ['F90'] = 'gfortran-9'
+os.environ['FC'] = 'gfortran-9'
 
 lapack = get_info('lapack')
 fftw = get_info('fftw')

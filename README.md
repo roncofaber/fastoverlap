@@ -1,3 +1,6 @@
+# DISCLAIMER
+This is a fork of the GitHub FASTOVERLAP package by M. Griffiths that can be found at [here](https://github.com/matthewghgriffiths/fastoverlap). The original repo was modified to work with newer Python versions and with the [`sea_urchin` MD analysis code](https://gitlab.com/electrolyte-machine/sea_urchin). For compilation details, refer to that repo. Thanks!
+
 # FASTOVERLAP
 Algorithms for fast alignment of structures in finite and periodic systems. These methods are also implemented in the [Cambridge Energy Landscape Software](http://www-wales.ch.cam.ac.uk/software.html) in `GMIN` and `OPTIM`.
 
