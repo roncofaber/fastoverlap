@@ -436,7 +436,14 @@ SUBROUTINE XDNRMP(NU,MU1,MU2,DARG,MODE,DPN,IPN,ISIG)
       IZ = IX
       GO TO 220
    40 I = IX - IY
-      IF (I) 80, 50, 90
+      !IF (I) 80, 50, 90
+      if( i < 0 ) then
+        goto 80
+      else if ( i == 0 ) then
+        goto 50
+      else
+        goto 90
+      endif
    50 IF (DABS(X).GT.1.0D0 .AND. DABS(Y).GT.1.0D0) GO TO 60
       IF (DABS(X).LT.1.0D0 .AND. DABS(Y).LT.1.0D0) GO TO 70
       Z = X + Y

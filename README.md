@@ -38,16 +38,14 @@ If you use this module, please cite the above paper.
 
 ## Compilation
 
-The modules can be compiled using `numpy.distutils` to build the Fortran Modules in place
+Use pip to install in one of the following modes:
 
-```
-$ python setup.py build_ext -i
-```
+# Install in development mode
+pip install -e .
 
-alternative the `f2py` modules can be directly compiled by running
+# Build a wheel
+pip wheel .
 
-```
-$ ./compile.sh
-```
-
+# Install from source
+pip install .
 

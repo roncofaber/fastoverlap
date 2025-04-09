@@ -109,10 +109,10 @@
 
 !***********************************************************************
 
-INCLUDE "commons.f90"
-INCLUDE "alignutils.f90"
-INCLUDE "fastutils.f90"
-INCLUDE "DSOFT.f90"
+!INCLUDE "commons.inc"
+!INCLUDE "alignutils.f90"
+!INCLUDE "fastutils.f90"
+!INCLUDE "DSOFT.f90"
 
 MODULE CLUSTERFASTOVERLAP
 
@@ -576,7 +576,7 @@ SQRTZ = SQRT(1.D0-Z**2)
 
 !Calculating Associate Legendre Function
 YML = CMPLX(0.D0,0.D0, 8)
-YML(0,0) = (4*PI)**-0.5
+YML(0,0) = (4*PI)**(-0.5)
 
 ! Initialising Recurrence for Associated Legendre Polynomials
 ! Calculating normalised Legendre Polynomials for better numerical stability
@@ -633,9 +633,9 @@ Z = COORD(3)/R
 
 !Calculating Associate Legendre Function
 YML = CMPLX(0.D0,0.D0, 8)
-YML(0,0) = (4*PI)**-0.5
+YML(0,0) = (4*PI)**(-0.5)
 
-FACT = (2*PI)**-0.5
+FACT = (2*PI)**(-0.5)
 
 DO J=0, L
     ! Calculate Normalised Legendre Polynomial
@@ -1186,4 +1186,4 @@ END MODULE CLUSTERFASTOVERLAP
 ! INCLUDE "minperm.f90"
 ! INCLUDE "newmindist.f90"
 ! INCLUDE "orient.f90"
-INCLUDE "legendre.f90"
+!INCLUDE "legendre.f90"
