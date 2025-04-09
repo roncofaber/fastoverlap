@@ -26,7 +26,7 @@ if(NOT FFTW3_FOUND)
 endif()
 
 # Set Fortran compiler flags
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -funroll-loops -O3 -march=native -Wrestrict")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -funroll-loops -O3 -march=native -Wrestrict -fPIC")
 
 # Create build directory for the compiled libraries
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90)
