@@ -66,7 +66,7 @@
 !        includes periodic boundary conditions
 
 
-!INCLUDE "commons.inc"
+!INCLUDE "commons.f90"
 
 MODULE ALIGNUTILS
 

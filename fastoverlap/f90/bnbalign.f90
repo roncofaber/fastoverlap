@@ -66,7 +66,7 @@
 
 !***********************************************************************
 
-!INCLUDE "commons.inc"
+!INCLUDE "commons.f90"
 !INCLUDE "alignutils.f90"
 
 MODULE GOPERMDIST

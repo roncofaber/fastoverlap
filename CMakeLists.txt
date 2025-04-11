@@ -26,7 +26,7 @@ if(NOT FFTW3_FOUND)
 endif()
 
 # Set Fortran compiler flags
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -funroll-loops -O3 -march=native -Wrestrict -fPIC")
+set(CMAKE_Fortran_FLAGS "-w -O3 -march=native -funroll-loops -fPIC -fallow-argument-mismatch")
 
 # Create build directory for the compiled libraries
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90)
@@ -107,6 +107,9 @@ foreach(FILE ${SORTED_FILES})
     message(STATUS "  ${FILENAME}")
 endforeach()
 
+# Ensure Fortran module files are placed in the correct directory
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
+
 # Create a single library with all Fortran modules
 add_library(fortran_modules STATIC ${SORTED_FILES})
 set_target_properties(fortran_modules PROPERTIES
@@ -124,56 +127,51 @@ if(FFTW3_FOUND)
 endif()
 target_link_libraries(fortran_modules PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 
-# Create Python extension modules
-# Each will use the pre-compiled modules
-Python_add_library(fastbulk MODULE WITH_SOABI)
-target_sources(fastbulk PRIVATE fastoverlap/f90/fastbulk.f90)
-target_include_directories(fastbulk PRIVATE ${CMAKE_BINARY_DIR}/modules)
-target_link_libraries(fastbulk PRIVATE fortran_modules ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
-if(FFTW3_FOUND)
-    if(TARGET PkgConfig::FFTW3)
-        target_link_libraries(fastbulk PRIVATE PkgConfig::FFTW3)
-    else()
-        target_include_directories(fastbulk PRIVATE ${FFTW3_INCLUDE_DIRS})
-        target_link_libraries(fastbulk PRIVATE ${FFTW3_LIBRARIES})
-    endif()
-endif()
+# Specify the Fortran directories
+set(FORTRAN_SRC_DIR     ${CMAKE_SOURCE_DIR}/fastoverlap/f90)
+set(FORTRAN_MODULES_DIR ${CMAKE_BINARY_DIR}/modules)
 
-Python_add_library(fastclusters MODULE WITH_SOABI)
-target_sources(fastclusters PRIVATE fastoverlap/f90/fastclusters.f90)
-target_include_directories(fastclusters PRIVATE ${CMAKE_BINARY_DIR}/modules)
-target_link_libraries(fastclusters PRIVATE fortran_modules ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
-if(FFTW3_FOUND)
-    if(TARGET PkgConfig::FFTW3)
-        target_link_libraries(fastclusters PRIVATE PkgConfig::FFTW3)
-    else()
-        target_include_directories(fastclusters PRIVATE ${FFTW3_INCLUDE_DIRS})
-        target_link_libraries(fastclusters PRIVATE ${FFTW3_LIBRARIES})
-    endif()
-endif()
+# Custom command to build Python extensions using f2py
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/fastoverlap/f90/libbnb.so
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/fastoverlap/f90
+    COMMAND ${Python_EXECUTABLE} -m numpy.f2py -c ${FORTRAN_SRC_DIR}/bnbalign.f90 -m libbnb -L${CMAKE_BINARY_DIR} -I${FORTRAN_MODULES_DIR} -llapack -lfftw3 -lfortran_modules --lower
+    DEPENDS fortran_modules
+    COMMENT "Building libbnb Python extension with f2py"
+)
 
-Python_add_library(libbnb MODULE WITH_SOABI)
-target_sources(libbnb PRIVATE fastoverlap/f90/bnbalign.f90)
-target_include_directories(libbnb PRIVATE ${CMAKE_BINARY_DIR}/modules)
-target_link_libraries(libbnb PRIVATE fortran_modules ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastbulk.so
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/fastoverlap/f90
+    COMMAND ${Python_EXECUTABLE} -m numpy.f2py -c ${FORTRAN_SRC_DIR}/fastbulk.f90 -m fastbulk -L${CMAKE_BINARY_DIR} -I${FORTRAN_MODULES_DIR} -llapack -lfftw3 -lfortran_modules --lower
+    DEPENDS fortran_modules
+    COMMENT "Building fastbulk Python extension with f2py"
+)
 
-# Set output names and properties
-set_target_properties(fastbulk PROPERTIES 
-    OUTPUT_NAME fastoverlap/f90/fastbulk
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastclusters.so
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/fastoverlap/f90
+    COMMAND ${Python_EXECUTABLE} -m numpy.f2py -c ${FORTRAN_SRC_DIR}/fastclusters.f90 -m fastclusters -L${CMAKE_BINARY_DIR} -I${FORTRAN_MODULES_DIR} -llapack -lfftw3 -lfortran_modules --lower
+    DEPENDS fortran_modules
+    COMMENT "Building fastclusters Python extension with f2py"
+)
 
-set_target_properties(fastclusters PROPERTIES 
-    OUTPUT_NAME fastoverlap/f90/fastclusters
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# Custom targets to build the Python extensions
+add_custom_target(
+    f2py_libbnb ALL DEPENDS ${CMAKE_BINARY_DIR}/fastoverlap/f90/libbnb.so
+    )
+add_custom_target(
+    f2py_fastbulk ALL DEPENDS ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastbulk.so
+    )
+add_custom_target(
+    f2py_fastclusters ALL DEPENDS ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastclusters.so
+    )
 
-set_target_properties(libbnb PROPERTIES 
-    OUTPUT_NAME fastoverlap/f90/libbnb
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# # Installation (optional)
+# install(FILES ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastbulk.so DESTINATION fastoverlap/f90)
+# install(FILES ${CMAKE_BINARY_DIR}/fastoverlap/f90/fastclusters.so DESTINATION fastoverlap/f90)
+# install(FILES ${CMAKE_BINARY_DIR}/fastoverlap/f90/libbnb.so DESTINATION fastoverlap/f90)
 
-# Install Python package
-install(DIRECTORY fastoverlap/ DESTINATION fastoverlap
-        FILES_MATCHING PATTERN "*.py")
-
-# Install compiled extensions
-install(TARGETS fastbulk fastclusters libbnb
-        LIBRARY DESTINATION fastoverlap/f90)
+# # Install Python package
+# install(DIRECTORY fastoverlap/ DESTINATION fastoverlap
+#         FILES_MATCHING PATTERN "*.py")
