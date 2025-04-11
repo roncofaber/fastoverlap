@@ -29,4 +29,9 @@ aligner_fo  = SphericalAlignFortran(scale=scale, Jmax=maxl)
 
 #Fastoverlap returns: distance, aligned cluster 1 and aligned cluster 2
 res_py = aligner_py(pos1, pos2)
+print("PYTHON")
+print(res_py)
+
 res_fo = aligner_fo(pos1, pos2)
+print("FORTRAN")
+print(res_fo)

@@ -109,7 +109,7 @@
 
 !***********************************************************************
 
-!INCLUDE "commons.inc"
+!INCLUDE "commons.f90"
 !INCLUDE "alignutils.f90"
 !INCLUDE "fastutils.f90"
 !INCLUDE "DSOFT.f90"
