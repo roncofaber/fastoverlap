@@ -21,7 +21,7 @@
 
 !    Citation:
 !    Kostelec, P. J., & Rockmore, D. N. (2008). FFTs on the rotation group. 
-!    Journal of Fourier Analysis and Applications, 14(2), 145–179. 
+!    Journal of Fourier Analysis and Applications, 14(2), 145-179. 
 !    http://doi.org/10.1007/s00041-008-9013-5
 
 !    Dependencies:
@@ -85,7 +85,7 @@ SUBROUTINE RECURRTERMS(J,M1,M2,A,B,C)
 ! relation. For more information see:
 !
 !    Kostelec, P. J., & Rockmore, D. N. (2008). FFTs on the rotation group. 
-!    Journal of Fourier Analysis and Applications, 14(2), 145–179. 
+!    Journal of Fourier Analysis and Applications, 14(2), 145-179. 
 !    http://doi.org/10.1007/s00041-008-9013-5
 
 IMPLICIT NONE
@@ -128,7 +128,7 @@ SUBROUTINE CALCWIGNERD(BANDWIDTH)
 ! Follows method described in:
 !
 !    Kostelec, P. J., & Rockmore, D. N. (2008). FFTs on the rotation group. 
-!    Journal of Fourier Analysis and Applications, 14(2), 145–179. 
+!    Journal of Fourier Analysis and Applications, 14(2), 145-179. 
 !    http://doi.org/10.1007/s00041-008-9013-5
 
 IMPLICIT NONE

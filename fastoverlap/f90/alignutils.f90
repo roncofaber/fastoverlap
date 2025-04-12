@@ -484,7 +484,7 @@ SUBROUTINE FINDBESTPERM(NDISTS,NIDX,NCOORDS,MAXNEI,PERM,DIST,NPERMGROUP,INFO)
 ! Solves assignment problem using the shortest augmenting path algorithm:
 ! Jonker, R., & Volgenant, A. (1987).
 ! A shortest augmenting path algorithm for dense and sparse linear assignment problems.
-! Computing, 38(4), 325–340. http://doi.org/10.1007/BF02278710
+! Computing, 38(4), 325-340. http://doi.org/10.1007/BF02278710
 
 ! This calculates the exact distance as well!
 

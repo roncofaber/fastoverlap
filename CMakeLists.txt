@@ -1,73 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
 project(fastoverlap LANGUAGES Fortran C CXX)
 
-###### START FUNCTIONS #####
-function(visit_file file)
-    list(FIND VISITED_FILES ${file} VISITED)
-    if(NOT ${VISITED} EQUAL -1)
-        return()
-    endif()
-    
-    list(APPEND VISITED_FILES ${file})
-    set(VISITED_FILES ${VISITED_FILES} PARENT_SCOPE)
-    
-    analyze_fortran_dependencies(${file} MODULES_PROVIDED MODULES_USED)
-    
-    foreach(MODULE ${MODULES_USED})
-        if(DEFINED MODULE_PROVIDERS_${MODULE})
-            visit_file(${MODULE_PROVIDERS_${MODULE}})
-        endif()
-    endforeach()
-    
-    list(APPEND SORTED_FILES ${file})
-    set(SORTED_FILES ${SORTED_FILES} PARENT_SCOPE)
-endfunction()
-
-# Function to analyze Fortran file dependencies
-function(analyze_fortran_dependencies file_path modules_provided modules_used)
-    # Extract modules provided by this file
-    execute_process(
-        COMMAND bash -c "grep -i '^\\s*module\\s\\+[a-z0-9_]\\+' '${file_path}' | sed 's/.*module\\s\\+\\([a-z0-9_]\\+\\).*/\\1/i'"
-        OUTPUT_VARIABLE provided
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    string(REPLACE "\n" ";" provided_list "${provided}")
-    set(${modules_provided} ${provided_list} PARENT_SCOPE)
-    
-    # Extract modules used by this file
-    execute_process(
-        COMMAND bash -c "grep -i '^\\s*use\\s\\+[a-z0-9_]\\+' '${file_path}' | sed 's/.*use\\s\\+\\([a-z0-9_]\\+\\).*/\\1/i'"
-        OUTPUT_VARIABLE used
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    string(REPLACE "\n" ";" used_list "${used}")
-    set(${modules_used} ${used_list} PARENT_SCOPE)
-endfunction()
-##### END FUNCTIONS #####
+# add custom modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/findfftw")
 
 # Find Python
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 
-# Find required libraries
+# Find lapack
 find_package(LAPACK REQUIRED)
-find_package(BLAS REQUIRED)
+find_package(FFTW REQUIRED)
 
-# Find FFTW3
-find_package(PkgConfig QUIET)
-if(PkgConfig_FOUND)
-    pkg_check_modules(FFTW3 IMPORTED_TARGET fftw3)
-endif()
-
-if(NOT FFTW3_FOUND)
-    # Manual FFTW3 detection as fallback
-    find_library(FFTW3_LIBRARIES NAMES fftw3 fftw3f)
-    find_path(FFTW3_INCLUDE_DIRS NAMES fftw3.h)
-    if(FFTW3_LIBRARIES AND FFTW3_INCLUDE_DIRS)
-        set(FFTW3_FOUND TRUE)
-    else()
-        message(FATAL_ERROR "FFTW3 library not found. Please install FFTW3 or specify its location.")
-    endif()
-endif()
+message(STATUS ${FFTW_DOUBLE_LIB})
+message(STATUS ${LAPACK_LIBRARIES})
 
 # Set Fortran compiler flags
 set(CMAKE_Fortran_FLAGS "-w -O3 -march=native -funroll-loops -fPIC")# -fallow-argument-mismatch")
@@ -75,125 +20,58 @@ set(CMAKE_Fortran_FLAGS "-w -O3 -march=native -funroll-loops -fPIC")# -fallow-ar
 # Copy the fortran/ directory to the build/ directory
 file(COPY ${CMAKE_SOURCE_DIR}/fastoverlap DESTINATION ${CMAKE_BINARY_DIR})
 
-# Create a common module directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
-
-# Get all Fortran source files
-file(GLOB FORTRAN_SOURCES ${CMAKE_BINARY_DIR}/fastoverlap/f90/*.f90)
-
-# Create a map of which file provides which module
-set(MODULE_PROVIDERS)
-foreach(SOURCE_FILE ${FORTRAN_SOURCES})
-    analyze_fortran_dependencies(${SOURCE_FILE} MODULES_PROVIDED MODULES_USED)
-    foreach(MODULE ${MODULES_PROVIDED})
-        set(MODULE_PROVIDERS_${MODULE} ${SOURCE_FILE})
-        list(APPEND MODULE_PROVIDERS ${MODULE})
-    endforeach()
-endforeach()
-
-# Create a topologically sorted list of files based on dependencies
-set(SORTED_FILES)
-set(VISITED_FILES)
-
-# Visit each file
-foreach(SOURCE_FILE ${FORTRAN_SOURCES})
-    visit_file(${SOURCE_FILE})
-endforeach()
-
-# Remove duplicates from the sorted list
-list(REMOVE_DUPLICATES SORTED_FILES)
-
-# Print the dependency order for debugging
-message(STATUS "Fortran files in dependency order:")
-foreach(FILE ${SORTED_FILES})
-    get_filename_component(FILENAME ${FILE} NAME)
-    message(STATUS "  ${FILENAME}")
-endforeach()
-
-# Ensure Fortran module files are placed in the correct directory
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
-
-# Create a single library with all Fortran modules
-add_library(fortran_modules STATIC ${SORTED_FILES})
-set_target_properties(fortran_modules PROPERTIES
-    Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules
-)
-
-# Link dependencies to the module library
-if(FFTW3_FOUND)
-    if(TARGET PkgConfig::FFTW3)
-        target_link_libraries(fortran_modules PRIVATE PkgConfig::FFTW3)
-    else()
-        target_include_directories(fortran_modules PRIVATE ${FFTW3_INCLUDE_DIRS})
-        target_link_libraries(fortran_modules PRIVATE ${FFTW3_LIBRARIES})
-    endif()
-endif()
-target_link_libraries(fortran_modules PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
-
-# include_directories(${CMAKE_BINARY_DIR}/fastoverlap/f90)
+# Create the static library libqueue
+set(QUEUE_FILE ${CMAKE_BINARY_DIR}/fastoverlap/f90/priorityqueue.f90)
+add_library(queue STATIC ${QUEUE_FILE})
 
 # Custom command to build Python extensions using f2py
 add_custom_command(
-    OUTPUT
-        libbnb.so
-    WORKING_DIRECTORY
-        ${CMAKE_BINARY_DIR}/fastoverlap/f90
+    OUTPUT libbnb.so
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c bnbalign.f90 commons.f90 alignutils.f90
-        -m libbnb
-        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR}/modules -lfortran_modules -llapack -lfftw3
-    DEPENDS
-        fortran_modules
-    COMMENT
-        "Building libbnb Python extension with f2py"
+        ${Python_EXECUTABLE} -m numpy.f2py -c bnbalign.f90 commons.f90 alignutils.f90 -m libbnb
+        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR} -lqueue -llapack
+    DEPENDS queue
+    COMMENT "Building libbnb Python extension with f2py"
 )
 
 add_custom_command(
-    OUTPUT
-        fastbulk.so
-    WORKING_DIRECTORY
-        ${CMAKE_BINARY_DIR}/fastoverlap/f90
+    OUTPUT fastbulk.so
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c fastbulk.f90 commons.f90 alignutils.f90 fastutils.f90
-        -m fastbulk
+        ${Python_EXECUTABLE} -m numpy.f2py -c fastbulk.f90 commons.f90 alignutils.f90 fastutils.f90 -m fastbulk
         -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR}/fastoverlap/f90 -llapack -lfftw3
-    DEPENDS
-        fortran_modules
-    COMMENT
-        "Building fastbulk Python extension with f2py"
+    COMMENT "Building fastbulk Python extension with f2py"
 )
 
 add_custom_command(
-    OUTPUT
-        fastclusters.so
-    WORKING_DIRECTORY
-        ${CMAKE_BINARY_DIR}/fastoverlap/f90
+    OUTPUT fastclusters.so
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c fastclusters.f90 commons.f90 alignutils.f90 legendre.f90 DSOFT.f90 fastutils.f90
-        -m fastclusters
+        ${Python_EXECUTABLE} -m numpy.f2py -c fastclusters.f90 commons.f90 alignutils.f90 legendre.f90 DSOFT.f90 fastutils.f90 -m fastclusters
         -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR}/fastoverlap/f90 -llapack -lfftw3
-    DEPENDS
-        fortran_modules
-    COMMENT
-        "Building fastclusters Python extension with f2py"
+    DEPENDS queue
+    COMMENT "Building fastclusters Python extension with f2py"
 )
 
 # Custom targets to build the Python extensions
-add_custom_target(
-    f2py_libbnb ALL DEPENDS libbnb.so
-)
-add_custom_target(
-    f2py_fastbulk ALL DEPENDS fastbulk.so
-)
-add_custom_target(
-    f2py_fastclusters ALL DEPENDS fastclusters.so
-)
+add_custom_target(f2py_libbnb       ALL DEPENDS libbnb.so)
+add_custom_target(f2py_fastbulk     ALL DEPENDS fastbulk.so)
+add_custom_target(f2py_fastclusters ALL DEPENDS fastclusters.so)
 
-# # Installation (optional)
-# install(FILES fastbulk.so DESTINATION ${CMAKE_BINARY_DIR}/fastoverlap/f90/)
-# install(FILES fastclusters.so DESTINATION ${CMAKE_BINARY_DIR}/fastoverlap/f90/)
-# install(FILES libbnb.so DESTINATION ${CMAKE_BINARY_DIR}/fastoverlap/f90/)
+# Find and install the .so files to the fastoverlap/f90 directory within the site-packages directory
+install(DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/fastoverlap/f90
+        FILES_MATCHING PATTERN "*.so")
 
-# # Install Python package
-# install(DIRECTORY fastoverlap/ DESTINATION fastoverlap
-#         FILES_MATCHING PATTERN "*.py")
+# Install the Python files
+file(GLOB PYTHON_FILES ${CMAKE_SOURCE_DIR}/fastoverlap/*.py)
+file(GLOB PYTHON_F90_FILES ${CMAKE_SOURCE_DIR}/fastoverlap/f90/*.py)
+
+# Install the Python files to the fastoverlap directory within the site-packages directory
+install(FILES ${PYTHON_FILES}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/fastoverlap)
+
+# Install the Python files in the f90 directory to the fastoverlap/f90 directory within the site-packages directory
+install(FILES ${PYTHON_F90_FILES}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/fastoverlap/f90)

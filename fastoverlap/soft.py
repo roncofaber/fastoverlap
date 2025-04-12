@@ -23,7 +23,7 @@
 
     Citation:
     Kostelec, P. J., & Rockmore, D. N. (2008). FFTs on the rotation group. 
-    Journal of Fourier Analysis and Applications, 14(2), 145–179. 
+    Journal of Fourier Analysis and Applications, 14(2), 145-179. 
     http://doi.org/10.1007/s00041-008-9013-5
 """
 
