@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core", "numpy>=1.17.0", "cmake"]
+requires = ["scikit-build-core", "numpy>=1.17.0", "cmake>=3.20"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -9,14 +9,20 @@ description = "Algorithms for fast alignment of atomic structures in finite and 
 authors = [
     {name = "Matthew Griffiths", email = "matthewghgriffiths@gmail.com"},
 ]
-requires-python = ">=3.7"
+maintainers = [
+    {name = "Matthew Griffiths", email = "matthewghgriffiths@gmail.com"},
+]
+requires-python = ">=3.8"
 license = {text = "GNU General Public License"}
 readme = "README.md"
+keywords = ["atomic structures", "alignment", "periodic systems", "finite systems", "branch and bound algorithm"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Fortran",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Operating System :: POSIX :: Linux",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
 ]
 
 [project.urls]
@@ -24,6 +30,5 @@ Homepage = "https://github.com/matthewghgriffiths/fastoverlap"
 Issues = "https://github.com/matthewghgriffiths/fastoverlap/issues"
 
 [tool.scikit-build]
-cmake.minimum-version = "3.15"
 wheel.packages = ["fastoverlap"]
 wheel.exclude = ["*.f90"]  # Don't include source files in wheel

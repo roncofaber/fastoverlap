@@ -7,15 +7,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/findfftw")
 # Find Python
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 
-# Find lapack
+# Find pkg-config
+find_package(PkgConfig REQUIRED)
+
+# Find lapack and fftw
+set(BLA_PREFER_PKGCONFIG 1)
 find_package(LAPACK REQUIRED)
 find_package(FFTW REQUIRED)
 
-message(STATUS ${FFTW_DOUBLE_LIB})
-message(STATUS ${LAPACK_LIBRARIES})
-
 # Set Fortran compiler flags
-set(CMAKE_Fortran_FLAGS "-w -O3 -march=native -funroll-loops -fPIC")# -fallow-argument-mismatch")
+set(CMAKE_Fortran_FLAGS "-w -O3 -march=native -funroll-loops -fPIC -fallow-argument-mismatch")
 
 # Copy the fortran/ directory to the build/ directory
 file(COPY ${CMAKE_SOURCE_DIR}/fastoverlap DESTINATION ${CMAKE_BINARY_DIR})
@@ -30,7 +31,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
         ${Python_EXECUTABLE} -m numpy.f2py -c bnbalign.f90 commons.f90 alignutils.f90 -m libbnb
-        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR} -lqueue -llapack
+        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR} -lqueue ${PKGC_LAPACK_LDFLAGS}
     DEPENDS queue
     COMMENT "Building libbnb Python extension with f2py"
 )
@@ -40,7 +41,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
         ${Python_EXECUTABLE} -m numpy.f2py -c fastbulk.f90 commons.f90 alignutils.f90 fastutils.f90 -m fastbulk
-        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR}/fastoverlap/f90 -llapack -lfftw3
+        -I${CMAKE_BINARY_DIR}/fastoverlap/f90 ${PKG_FFTW_LDFLAGS} ${PKGC_LAPACK_LDFLAGS}
     COMMENT "Building fastbulk Python extension with f2py"
 )
 
@@ -49,7 +50,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
         ${Python_EXECUTABLE} -m numpy.f2py -c fastclusters.f90 commons.f90 alignutils.f90 legendre.f90 DSOFT.f90 fastutils.f90 -m fastclusters
-        -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR}/fastoverlap/f90 -llapack -lfftw3
+        -I${CMAKE_BINARY_DIR}/fastoverlap/f90 ${PKG_FFTW_LDFLAGS} ${PKGC_LAPACK_LDFLAGS}
     DEPENDS queue
     COMMENT "Building fastclusters Python extension with f2py"
 )
