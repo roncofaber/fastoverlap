@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core", "numpy>=1.17.0", "cmake>=3.20"]
+requires = ["scikit-build-core", "numpy>=1.17.0", "cmake>=3.20", "meson"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -15,7 +15,8 @@ maintainers = [
 requires-python = ">=3.8"
 license = {text = "GNU General Public License"}
 readme = "README.md"
-keywords = ["atomic structures", "alignment", "periodic systems", "finite systems", "branch and bound algorithm"]
+keywords = ["atomic structures", "alignment", "periodic systems",
+            "finite systems", "branch and bound algorithm"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Fortran",
@@ -23,6 +24,11 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+    "munkres",
+    "numpy",
+    "scipy"
 ]
 
 [project.urls]
