@@ -30,7 +30,7 @@ add_custom_command(
     OUTPUT libbnb.so
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c bnbalign.f90 commons.f90 alignutils.f90 -m libbnb
+        ${Python_EXECUTABLE} -m numpy.f2py -c commons.f90 alignutils.f90 bnbalign.f90   -m libbnb
         -L${CMAKE_BINARY_DIR} -I${CMAKE_BINARY_DIR} -lqueue ${PKGC_LAPACK_LDFLAGS}
     DEPENDS queue
     COMMENT "Building libbnb Python extension with f2py"
@@ -40,7 +40,7 @@ add_custom_command(
     OUTPUT fastbulk.so
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c fastbulk.f90 commons.f90 alignutils.f90 fastutils.f90 -m fastbulk
+        ${Python_EXECUTABLE} -m numpy.f2py -c commons.f90 alignutils.f90 fastutils.f90 fastbulk.f90 -m fastbulk
         -I${CMAKE_BINARY_DIR}/fastoverlap/f90 ${PKG_FFTW_LDFLAGS} ${PKGC_LAPACK_LDFLAGS}
     COMMENT "Building fastbulk Python extension with f2py"
 )
@@ -49,7 +49,7 @@ add_custom_command(
     OUTPUT fastclusters.so
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/fastoverlap/f90
     COMMAND
-        ${Python_EXECUTABLE} -m numpy.f2py -c fastclusters.f90 commons.f90 alignutils.f90 legendre.f90 DSOFT.f90 fastutils.f90 -m fastclusters
+        ${Python_EXECUTABLE} -m numpy.f2py -c commons.f90 alignutils.f90 legendre.f90 DSOFT.f90 fastutils.f90 fastclusters.f90 -m fastclusters
         -I${CMAKE_BINARY_DIR}/fastoverlap/f90 ${PKG_FFTW_LDFLAGS} ${PKGC_LAPACK_LDFLAGS}
     DEPENDS queue
     COMMENT "Building fastclusters Python extension with f2py"
