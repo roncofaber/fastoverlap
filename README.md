@@ -24,57 +24,169 @@ If you use this module, please cite the above paper.
 
 # INSTALLATION
 
-## Required packages
+## System Requirements
 
-### Python (3.8+) packages:
+### Python Requirements:
+- Python 3.8 or higher
+- The package has been tested on Python 3.8-3.12
 
-1. `numpy`: we use numpy everywhere for doing numerical work. It also installs `f2py` which is used to compile fortran code into modules callable by python.
-2. `scipy`: for some of the optimizers and various scientific tools.
-3. [`munkres`](https://pypi.org/project/munkres/) (preferred) or [`pele`](http://pele-python.github.io/pele/): to solve the linear assignment problem for permutational alignment.
+### System Dependencies:
 
-### Fortran compilation:
+Before installation, ensure you have the following system dependencies installed:
 
-1. Fortran compiler (tested with `gfortran`).
-2. Scientific libraries: `fftw` and `lapack` (on Ubutnu install from apt liblapack-dev and libfftw3-dev).
-3. `cmake` and `meson` to build the fortran extensions.
+**Ubuntu/Debian:**
+```bash
+sudo apt-get install cmake pkg-config libfftw3-dev liblapack-dev gfortran
+```
 
-## Compilation instruction
+**CentOS/RHEL:**
+```bash
+sudo yum install cmake pkgconfig fftw-devel lapack-devel gcc-gfortran
+```
 
-### Install using `pip`
+**Arch Linux:**
+```bash
+sudo pacman -S cmake pkgconf fftw lapack gcc-fortran
+```
 
-Often, you can just use pip to install in one of the following modes:
+**macOS (with Homebrew):**
+```bash
+brew install cmake pkg-config fftw lapack gcc
+```
+
+**Windows:**
+- Install cmake, pkg-config, and FFTW/LAPACK via vcpkg or conda
+- Consider using conda environment for easier dependency management
+
+### Python Dependencies:
+
+The package automatically installs the following Python dependencies:
+- `numpy>=1.19.0,<2.0.0`: numerical computing and f2py for Fortran compilation
+- `scipy>=1.5.0`: scientific computing tools and optimizers
+- `munkres>=1.1.0`: linear assignment problem solver for permutational alignment
+
+## Installation Methods
+
+### 1. Standard Installation (Recommended)
+
+The easiest way to install fastoverlap:
 
 ```bash
-# Simple install:
-pip install .
+# Basic installation
+pip install -e .
 
-# Install in development mode
+# Or for a regular (non-editable) install
+pip install .
+```
+
+### 2. Installation with Optional Dependencies
+
+For different use cases, you can install with optional dependencies:
+
+```bash
+# Install with ASE support (for examples)
+pip install -e ".[examples]"
+
+# Install with development tools
+pip install -e ".[dev]"
+
+# Install everything
+pip install -e ".[all]"
+```
+
+### 3. Check Dependencies Before Installation
+
+You can check if all system dependencies are available before attempting installation:
+
+```bash
+python setup.py --check-deps
+```
+
+This will report any missing system dependencies and provide installation instructions for your platform.
+
+### 4. Alternative Installation via requirements.txt
+
+If you prefer using requirements.txt:
+
+```bash
+pip install -r requirements.txt
 pip install -e .
 ```
 
+### 5. Manual Installation (Fallback)
 
-### Manual installation
-
-In some cases, the pip installation can fail. In that case you can manually install the package:
+If pip installation fails, you can manually build the package:
 
 ```bash
-# clone the repo
+# Clone the repository
 git clone https://github.com/roncofaber/fastoverlap.git
 cd fastoverlap/
 
-# create build directory
+# Create build directory
 mkdir build
 cd build/
 
-# compile
+# Configure and build
 cmake ..
-make # -j 4 for parallel
+make -j4  # Use multiple cores for faster compilation
 
-# optional (will copy the files in your python packages folder)
+# Optional: Install to system Python packages
 make install
 ```
 
-If you don't want to run `make install`, you can add the `build` directory to your `PYTHONPATH`, or copy the `*.so` extensions from `fastoverlap/build/fastoverlap/f90` to `fastoverlap/fastoverlap/f90` and add the cloned repo to the `PYTHONPATH`.
+## Troubleshooting Installation
+
+### Common Issues:
+
+1. **Missing system dependencies**: Run `python setup.py --check-deps` to identify missing packages
+2. **Fortran compiler issues**: Install `gfortran` and ensure it's in your PATH
+3. **NumPy 2.0 compatibility**: The package is pinned to numpy<2.0.0 for stability
+4. **Permission errors**: Use `--user` flag with pip or create a virtual environment
+
+### Virtual Environment (Recommended)
+
+For a clean installation, use a virtual environment:
+
+```bash
+# Create virtual environment
+python -m venv fastoverlap_env
+
+# Activate it
+source fastoverlap_env/bin/activate  # Linux/macOS
+# or
+fastoverlap_env\Scripts\activate  # Windows
+
+# Install
+pip install -e .
+```
+
+### Conda Environment
+
+For conda users:
+
+```bash
+# Create conda environment with dependencies
+conda create -n fastoverlap python=3.11 cmake numpy scipy
+conda activate fastoverlap
+
+# Install remaining dependencies
+conda install -c conda-forge fftw pkg-config
+
+# Install package
+pip install -e .
+```
+
+## Verification
+
+After installation, verify everything works:
+
+```bash
+# Test basic functionality
+python examples/fo_test_ase.py
+
+# Check available Fortran modules
+python -c "import fastoverlap.f90 as f90; print(f'Fortran modules available: {f90.have_fortran}')"
+```
 
 
 

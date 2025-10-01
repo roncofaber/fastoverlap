@@ -1,0 +1,22 @@
+# Include additional files in the source distribution
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+include CMakeLists.txt
+
+# Include cmake files
+recursive-include cmake *
+
+# Include Fortran source files for building
+recursive-include fastoverlap/f90 *.f90
+
+# Exclude build artifacts and cache files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.so
+global-exclude __pycache__
+global-exclude .pytest_cache
+global-exclude build
+global-exclude dist
+global-exclude *.egg-info
