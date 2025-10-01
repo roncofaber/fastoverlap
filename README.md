@@ -61,7 +61,7 @@ brew install cmake pkg-config fftw lapack gcc
 ### Python Dependencies:
 
 The package automatically installs the following Python dependencies:
-- `numpy>=1.19.0,<2.0.0`: numerical computing and f2py for Fortran compilation
+- `numpy>=1.19.0`: numerical computing and f2py for Fortran compilation (compatible with numpy 2.x)
 - `scipy>=1.5.0`: scientific computing tools and optimizers
 - `munkres>=1.1.0`: linear assignment problem solver for permutational alignment
 
@@ -140,7 +140,7 @@ make install
 
 1. **Missing system dependencies**: Run `python setup.py --check-deps` to identify missing packages
 2. **Fortran compiler issues**: Install `gfortran` and ensure it's in your PATH
-3. **NumPy 2.0 compatibility**: The package is pinned to numpy<2.0.0 for stability
+3. **NumPy compatibility**: The package supports both numpy 1.x and 2.x versions
 4. **Permission errors**: Use `--user` flag with pip or create a virtual environment
 
 ### Virtual Environment (Recommended)
